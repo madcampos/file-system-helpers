@@ -10,12 +10,8 @@ describe('pathToSegments', () => {
 		expect(pathToSegments('')).toEqual([]);
 	});
 
-	test('When the path contains a lone percentage sign, then it is handled correctly', () => {
-		expect(pathToSegments('%')).toEqual(['%']);
-	});
-
 	test('When the path contains URI encoded strings, then they are handled correctly', () => {
-		expect(pathToSegments('foo%20bar/baz%2Fqux')).toEqual(['foo bar', 'baz', 'qux']);
+		expect(pathToSegments('foo%20bar/baz%2Fqux')).toEqual(['foo%20bar', 'baz%2Fqux']);
 	});
 
 	test('When the path contains multiple slashes, then they are collapsed', () => {
@@ -150,14 +146,28 @@ describe('resolve', () => {
 });
 
 describe('encodePath', () => {
+	test('When encoding with default replacer, normal characters get kept', () => {
+		expect(encodePath('foo🙃')).toBe('foo🙃');
+	});
+	test('When encoding with default replacer, segments get trimmed', () => {
+		expect(encodePath('      foo     /      bar      ')).toBe('foo/bar');
+	});
+
 	test('When encoding with default replacer, then it resolves restricted characters', () => {
-		expect(encodePath('foo/bar/baz?')).toBe('foo/bar/baz%3f');
-		expect(encodePath('foo:bar')).toBe('foo%3abar');
+		expect(encodePath('*"/\\><:|?\'')).toBe('%2a%22/%5c%3e%3c%3a%7c%3f%27');
 	});
 
 	test('When encoding with default replacer, then it resolves restricted names', () => {
 		expect(encodePath('CON')).toBe('%43%4f%4e');
 		expect(encodePath('COM1')).toBe('%43%4f%4d%31');
+	});
+
+	test('When encoding with default replacer, then it resolves "."', () => {
+		expect(encodePath('.')).toBe('%2e');
+	});
+
+	test('When encoding with default replacer, then it resolves ".."', () => {
+		expect(encodePath('..')).toBe('%2e%2e');
 	});
 
 	test('When a custom replacer is provided, then it is used to encode segments', () => {

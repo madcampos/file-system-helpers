@@ -8,8 +8,7 @@
  * @param path The path to split into segments
  */
 export function pathToSegments(path: string) {
-	const decodedPath = decodeURIComponent(path.replaceAll(/%(?![0-9a-fA-F]{2})/giu, '%25'));
-	const segments = decodedPath.split('/').filter(Boolean).map((part) => part.trim());
+	const segments = path.split('/').filter(Boolean).map((part) => part.trim());
 
 	return segments;
 }
@@ -143,27 +142,29 @@ const RESTRICTED_CHARACTERS = [
 	// oxlint-disable-next-line no-magic-numbers
 	...new Array(32).fill('').map((_, i) => String.fromCharCode(128 + i)),
 	// INFO: characters not allowed on Windows/Linux/Mac
-	...['*', '"', '/', '\\', '>', '<', ':', '|', '?'],
+	...['*', '"', '/', '\\', '>', '<', ':', '|', '?', "'"],
 	// INFO: also add "%" to make it easier to decode lone "%" symbols
 	'%'
 ];
 
-function defaultReplacer(segment: string) {
-	if (segment === '.') {
-		return '%2e';
-	}
+function defaultEncodeReplacer(segment: string) {
+	const trimmedSegment = segment.trim();
 
-	if (segment === '..') {
+	if (trimmedSegment === '..') {
 		return '%2e%2e';
 	}
 
-	if (RESTRICTED_NAMES.includes(segment)) {
+	if (trimmedSegment === '.') {
+		return '%2e';
+	}
+
+	if (RESTRICTED_NAMES.includes(trimmedSegment)) {
 		// oxlint-disable-next-line typescript/no-misused-spread
-		return [...segment].map((char) => `%${char.charCodeAt(0).toString(16)}`).join('');
+		return [...trimmedSegment].map((char) => `%${char.charCodeAt(0).toString(16)}`).join('');
 	}
 
 	// oxlint-disable-next-line typescript/no-misused-spread
-	const codePoints = [...segment];
+	const codePoints = [...trimmedSegment];
 	let normalizedSegment = '';
 
 	for (const codePoint of codePoints) {
@@ -174,19 +175,33 @@ function defaultReplacer(segment: string) {
 		}
 	}
 
-	return normalizedSegment.trim();
+	return normalizedSegment;
 }
 
 /**
- * Encodes a path string, taking care of restricted characters and names.
+ * Encodes a path string, taking care of restricted characters and names and converting them to percent encoded characters.
  *
- * @param path The path to normalize.
+ * @param path The path to encode.
  * @param replacer A custom replacer function that will be invoked for each segment of the path.
  */
 export function encodePath(path: string, replacer?: (segment: string) => string) {
 	const segments = pathToSegments(path);
 
-	return segments.map((segment) => (replacer ?? defaultReplacer)(segment)).join('/');
+	return segments.map((segment) => (replacer ?? defaultEncodeReplacer)(segment)).join('/');
 }
 
-// TODO: add decode path function
+function defaultDecodeReplacer(segment: string) {
+	return decodeURIComponent(segment.trim().replaceAll(/%(?![0-9a-fA-F]{2})/giu, '%25'));
+}
+
+/**
+ * Decodes a path string, converting back from perdent encoded characters.
+ *
+ * @param path The path to decode.
+ * @param replacer A custom replacer function that will be invoked for each segment of the path.
+ */
+export function decodePath(path: string, replacer?: (segment: string) => string) {
+	const segments = pathToSegments(path);
+
+	return segments.map((segment) => (replacer ?? defaultDecodeReplacer)(segment)).join('/');
+}
