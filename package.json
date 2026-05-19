@@ -29,7 +29,7 @@
 	"scripts": {
 		"bootstrap": "playwright install chromium",
 
-		"build": "tsc",
+		"build": "tsc --exclude \"src/**/*.test.ts\"",
 
 		"format": "dprint fmt",
 
