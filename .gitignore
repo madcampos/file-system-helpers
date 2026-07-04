@@ -18,3 +18,7 @@ node_modules
 coverage
 .vitest-attachments/
 __screenshots__/
+
+# Build artifacts
+dist/
+*.tgz

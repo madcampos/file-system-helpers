@@ -12,21 +12,23 @@
 	"author": "madcampos",
 	"license": "LGPL-2.1-or-later",
 	"type": "module",
+	"files": ["dist"],
 	"exports": {
 		".": "./dist/opfs.js",
-		"./opfs": "./dist/opfs.js",
 		"./path": "./dist/path.js",
 		"./permissions": "./dist/permissions.js",
 		"./access": "./dist/fs-access.js"
 	},
 	"scripts": {
 		"bootstrap": "playwright install chromium",
-		"build": "tsc --exclude \"src/**/*.test.ts\"",
+		"build": "tsc --project tsconfig.build.json",
 		"format": "dprint fmt",
 		"typecheck": "tsc --noEmit",
 		"lint:js": "oxlint --fix",
 		"lint": "pnpm run typecheck && pnpm run lint:js",
-		"test": "vitest"
+		"test": "vitest",
+		"prepublishOnly": "pnpm run build",
+		"preversion": ""
 	},
 	"devDependencies": {
 		"@types/wicg-file-system-access": "^2023.10.7",
