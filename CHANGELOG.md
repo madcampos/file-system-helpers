@@ -1,5 +1,12 @@
 # Changelog
 
+
+## 1.0.1
+<sub>2026-07-05</sub>
+
+-  *(patch)*
+  - @mad-c/file-system-helpers: update docs
+
 ## 1.0.0
 <sub>2026-07-04</sub>
 
