@@ -4,6 +4,17 @@
 
 
 
+
+## 2.0.0
+<sub>2026-07-07</sub>
+
+-  *(major)*
+  - @mad-c/file-system-helpers: resolve a default to dir listing recursion parameter and expose the entry path
+  - @mad-c/file-system-helpers: Bump package version
+  - @mad-c/file-system-helpers: add tests for invalid file names
+  - @mad-c/file-system-helpers: Bump package version
+  - @mad-c/file-system-helpers: publish command and readme typo
+
 ## 1.1.0
 <sub>2026-07-05</sub>
 
