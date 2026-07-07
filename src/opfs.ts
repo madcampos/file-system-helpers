@@ -168,6 +168,7 @@ export interface ListDirEntriesOptions {
 
 export interface FileSystemEntry {
 	name: string;
+	path: string;
 	handle: FileSystemHandle;
 	children?: FileSystemEntry[];
 }
@@ -181,24 +182,29 @@ export interface FileSystemEntry {
  * @param options The options for function.
  */
 export async function listDirEntries(pathOrHandle: string | FileSystemDirectoryHandle, { depth = 0, rootDir }: ListDirEntriesOptions = {}) {
-	const { name, parentHandle, parentPath } = await resolveParentHandle(pathOrHandle, { rootDir });
+	const resolved = await resolveParentHandle(pathOrHandle, { rootDir });
 	const resolvedRootHandle = rootDir ?? await navigator.storage.getDirectory();
-	const dirHandle = (parentPath === '/' && name === '') ? resolvedRootHandle : await parentHandle.getDirectoryHandle(name);
+	const dirHandle = (resolved.parentPath === '/' && resolved.name === '') ? resolvedRootHandle : await resolved.parentHandle.getDirectoryHandle(resolved.name);
 
 	async function getRecursiveEntries(curDirHandle: FileSystemDirectoryHandle, curDepth: number) {
 		const entries: FileSystemEntry[] = [];
+		const { parentPath, name: parentName } = await resolveParentHandle(curDirHandle, { rootDir });
 
 		for await (const [name, entry] of curDirHandle.entries()) {
-			if (entry.kind === 'file' || curDepth >= depth) {
+			const path = resolve(parentPath, parentName, name);
+
+			if (entry.kind === 'file') {
 				entries.push({
 					name,
+					path,
 					handle: entry
 				});
 			} else {
 				entries.push({
 					name,
+					path,
 					handle: entry,
-					children: await getRecursiveEntries(entry, curDepth + 1)
+					children: curDepth < depth ? await getRecursiveEntries(entry, curDepth + 1) : []
 				});
 			}
 		}

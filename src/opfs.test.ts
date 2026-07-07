@@ -340,7 +340,7 @@ describe('listDirEntries', () => {
 
 		// oxlint-disable-next-line no-magic-numbers
 		expect(entries.length).toBe(2);
-		expect(entries.every(({ children }) => children === undefined)).toBe(true);
+		expect(entries.every(({ children }) => !children?.length)).toBe(true);
 	});
 
 	test('When a partial depth is provided, then it returns children up to that depth', async () => {
